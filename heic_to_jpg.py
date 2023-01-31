@@ -13,4 +13,4 @@ def convert_elements_to_jpg(path, delete_original=False):
                 os.remove(path + filename)
             continue
 
-convert_elements_to_jpg('images/editable_media/', delete_original=True)
+#convert_elements_to_jpg('images/editable_media/', delete_original=True)
