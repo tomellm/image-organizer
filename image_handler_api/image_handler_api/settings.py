@@ -55,7 +55,9 @@ ROOT_URLCONF = 'image_handler_api.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            Path(BASE_DIR).joinpath('image_handler_api/templates/')
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
