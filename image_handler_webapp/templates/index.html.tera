@@ -2,10 +2,11 @@
 
 {% block content %}
     <h1>The number of images is: {{ num_files }}!</h1>
+    <h2>The root dir is: {{ images_base_path }}</h2>
     <h3>The images are:</h3>
     <ul>
-        {% for file in files %}
-            <li>{{ file }}</li>
+        {% for file in all_files %}
+            <li>{{file}}</li>
         {% endfor %}
     </ul>
 
