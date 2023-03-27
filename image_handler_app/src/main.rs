@@ -68,7 +68,7 @@ fn not_found() -> Json<&'static str> {
 #[launch]
 fn rocket() -> _ {
     rocket::build()
-        .mount("/", routes![index, ftp])
+        .mount("/", routes![index])
         .register("/", catchers![not_found])
 }
 
