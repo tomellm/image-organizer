@@ -56,10 +56,6 @@ async fn index() -> Json<&'static str> {
 
 }
 
-#[get("/ftp")]
-async fn ftp() -> Json<&'static str> {
-    
-}
 
 #[catch(404)]
 fn not_found() -> Json<&'static str> {
