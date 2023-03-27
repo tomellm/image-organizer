@@ -1,15 +1,19 @@
 [package]
-name = "image_handler_webapp"
+name = "fetch"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
-rocket = "0.5.0-rc.2"
+anyhow = "1.0.58"
+leptos = "0.2.3"
+reqwasm = "0.5.0"
 serde = { version = "1", features = ["derive"] }
-reqwest = { version = "0.11", features = ["json"] }
+log = "0.4"
+console_log = "0.2"
+console_error_panic_hook = "0.1.7"
 
-[dependencies.rocket_dyn_templates]
-version = "0.1.0-rc.2"
-features = ["tera"]
+[dev-dependencies]
+wasm-bindgen-test = "0.3.0"
+
+[workspace.metadata.cargo-all-features]
+skip_feature_sets = [["csr", "ssr"], ["csr", "hydrate"], ["ssr", "hydrate"]]
