@@ -1,0 +1,10 @@
+[workspace]
+
+members = [
+    "api",
+    "view",
+    "types"
+]
+
+resolver="2"
+
