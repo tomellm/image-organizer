@@ -1,23 +1,24 @@
-use image::codecs::jpeg::JpegDecoder;
-use types::database::*; 
+use crate::db;
 use axum::{
-    routing::{get, post}, 
-    Router, 
-    extract::State, Json, 
+    extract::State,
+    routing::{get, post},
+    Json, Router,
 };
-use std::{env, fs, io::BufReader};
-use sqlx::{mysql::MySqlPool,MySql, Pool, QueryBuilder};
 use dotenv::dotenv;
-use std::sync::Arc;
+use image::codecs::jpeg::JpegDecoder;
 use image::io::Reader;
+use sqlx::{mysql::MySqlPool, MySql, Pool, QueryBuilder};
+use std::sync::Arc;
+use std::{env, fs, io::BufReader};
+use types::{args::ImageCreateArgs, database::*, image::Image};
 
 pub async fn read_images() -> Json<Vec<String>> {
-    let arr: Vec<String>= fs::read_dir("../../working_files/original").unwrap().map(|d| {
-        format!("{:?}", d.unwrap().path()).to_string()
-    }).collect();
+    let arr: Vec<String> = fs::read_dir("../../working_files/original")
+        .unwrap()
+        .map(|d| format!("{:?}", d.unwrap().path()).to_string())
+        .collect();
     Json(arr)
 }
-
 
 // camphoto_684387517 (5).jpg
 
@@ -25,26 +26,43 @@ pub async fn read_image_stream() -> Vec<u8> {
     fs::read("../../camphoto_684387517 (5).jpg").unwrap()
 }
 
-pub async fn clear(
-    State(arc_pool): State<Arc<Pool<MySql>>>
-) -> String {
+pub async fn clear(State(arc_pool): State<Arc<Pool<MySql>>>) -> String {
     let result = sqlx::query!("truncate table images_data")
-        .execute(&*arc_pool).await;
+        .execute(&*arc_pool)
+        .await;
 
     match result {
         Ok(_) => "worked".to_string(),
-        Err(_) => "didnt work".to_string()
+        Err(_) => "didnt work".to_string(),
     }
 }
 
+pub async fn get_all(
+    State(arc_pool): State<Arc<Pool<MySql>>>
+) -> Json<Vec<Image>> {
+    let images = db::get_images(arc_pool).await.unwrap();
 
+    Json(images)
+}
+
+pub async fn save_one(
+    State(arc_pool): State<Arc<Pool<MySql>>>,
+    Json(input): Json<ImageCreateArgs>,
+) -> Json<Image> {
+    let image = Image::from_args(input);
+    let out = db::save_image(arc_pool, image.clone()).await;
+
+    Json(image)
+}
+
+/*
 pub async fn get_all(
     State(arc_pool): State<Arc<Pool<MySql>>>
 ) -> Json<Vec<ImageData>> {
     let row:Vec<ImageData> = sqlx::query_as!(ImageData, "SELECT * FROM images_data")
         .fetch_all(&*arc_pool).await.expect("Could not execute fetch all for images_data");
 
-   Json(row) 
+   Json(row)
 }
 
 pub async fn insert_one(
@@ -108,8 +126,8 @@ pub async fn load(
             .push_bind(image.file_size);
     });
 
-    
+
     let mut query = query_builder.build();
     query.execute(&*arc_pool).await.expect("could not do insert");
     String::from("worked")
-}
+}*/

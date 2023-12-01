@@ -1,0 +1,17 @@
+{
+    "original_name": "hello",
+    "current_name": "jeff",
+    "extension": "jpg",
+    "meta_data": [
+        {
+            "key": "key",
+            "val": "val"
+        }
+    ],
+    "xmp_data": [
+        {
+            "key": "key",
+            "val": "val"
+        }
+    ]
+}

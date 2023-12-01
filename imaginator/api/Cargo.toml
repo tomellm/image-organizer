@@ -15,3 +15,4 @@ tokio-util = { version = "0.7.9", features = ["io"] }
 tracing = "0.1.37"
 tracing-subscriber = "0.3.17"
 types = { path = "../types"}
+uuid = { version = "1.6.1", features = ["v7", "serde"] }
