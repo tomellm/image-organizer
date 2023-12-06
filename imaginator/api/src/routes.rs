@@ -26,15 +26,24 @@ pub async fn read_image_stream() -> Vec<u8> {
     fs::read("../../camphoto_684387517 (5).jpg").unwrap()
 }
 
-pub async fn clear(State(arc_pool): State<Arc<Pool<MySql>>>) -> String {
-    let result = sqlx::query!("truncate table images_data")
+pub async fn clear(State(arc_pool): State<Arc<Pool<MySql>>>) -> Result<(), ()> {
+    let _ = sqlx::query!("truncate table images_data")
         .execute(&*arc_pool)
-        .await;
+        .await 
+        .or(Err(()))?;
 
-    match result {
-        Ok(_) => "worked".to_string(),
-        Err(_) => "didnt work".to_string(),
-    }
+    let _ = sqlx::query!("truncate table images_metadata")
+        .execute(&*arc_pool)
+        .await 
+        .or(Err(()))?;
+
+    let _ = sqlx::query!("truncate table images_xmpdata")
+        .execute(&*arc_pool)
+        .await 
+        .or(Err(()))?;
+
+    Ok(())
+
 }
 
 pub async fn get_all(

@@ -1,5 +1,6 @@
 #[allow(dead_code)]
 use serde::{Deserialize, Serialize};
+use sqlx::{query_builder::Separated, MySql};
 use uuid::Uuid;
 
 use crate::image::{Image, XmpData, MetaData};
@@ -92,6 +93,8 @@ impl ImageMetaData {
             val: self.data_val
         })
     }
+
+
 }
 
 impl ImageXmpData {
