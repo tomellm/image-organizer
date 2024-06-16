@@ -1,3 +1,7 @@
 working_files/
 **/.DS_Store
 __pycache__/
+
+/persist
+**/target
+/old_tries

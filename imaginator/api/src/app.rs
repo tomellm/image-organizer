@@ -2,6 +2,7 @@ use leptonic::prelude::*;
 use leptos::*;
 use leptos_meta::{provide_meta_context, Meta, Stylesheet, Title};
 use leptos_router::*;
+use crate::routes::*;
 
 use crate::error_template::{AppError, ErrorTemplate};
 
@@ -33,5 +34,17 @@ pub fn App() -> impl IntoView {
                 </Routes>
             </Router>
         </Root>
+    }
+}
+
+#[component]
+pub fn ImagesView() -> impl IntoView {
+    let resouce = create_resource(|| (), |_| async move {
+        read_images().await
+    });
+    view!{
+        <div>
+
+        </div>
     }
 }

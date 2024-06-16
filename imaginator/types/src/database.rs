@@ -1,69 +1,48 @@
+use chrono::DateTime;
+use chrono::TimeZone;
+use chrono::Utc;
 #[allow(dead_code)]
 use serde::{Deserialize, Serialize};
-use sqlx::{query_builder::Separated, MySql};
 use uuid::Uuid;
+use crate::image::Media;
+use crate::mediatypes::MediaType;
+use crate::metadata::*;
+use crate::xmpdata::*;
 
-use crate::image::{Image, XmpData, MetaData};
-
-/*
-create table images_data (
-    uuid varchar(32) primary key not null, 
-    original_name varchar(255) not null, 
-    current_name varchar(255) not null, 
-    extension varchar(20) not null
-);
-*/
-
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct ImageData{
+#[derive(Clone, Debug, Deserialize, Serialize, sqlx::FromRow)]
+pub struct MediaData{
     pub uuid: String,
     pub original_name: String,
     pub current_name: String,
-    pub extension: String
+    pub extension: String,
+    pub media_type: i8,
+    pub datetime_created: Option<DateTime<Utc>>
 }
 
-/*
-create table image_metadata ( 
-    uuid varchar(32) primary key not null, 
-    image_uuid varchar(32) not null,
-    data_key varchar(255) not null, 
-    data_val tinytext not null
-);
-*/
-
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct ImageMetaData {
+#[derive(Clone, Debug, Deserialize, Serialize, sqlx::FromRow)]
+pub struct MediaMetaData {
     pub uuid: String,
-    pub image_uuid: String,
+    pub media_uuid: String,
     pub data_key: String,
     pub data_val: String
 }
 
-/*
-create table image_xmpdata ( 
-    uuid varchar(32) primary key not null, 
-    image_uuid varchar(32) not null, 
-    data_key varchar(255) not null, 
-    data_val tinytext not null
-);
- */
-
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct ImageXmpData {
+#[derive(Clone, Debug, Deserialize, Serialize, sqlx::FromRow)]
+pub struct MediaXmpData {
     pub uuid: String,
-    pub image_uuid: String,
+    pub media_uuid: String,
     pub data_key: String,
     pub data_val: String
 }
 
 
-impl ImageData {
+impl MediaData {
 
     pub fn to_struct(
         self,
-        meta_data: Vec<ImageMetaData>,
-        xmp_data: Vec<ImageXmpData>
-    ) -> Image {
+        meta_data: Vec<MediaMetaData>,
+        xmp_data: Vec<MediaXmpData>
+    ) -> Media {
         let meta_data = meta_data.into_iter()
             .map(|md| md.to_struct().unwrap())
             .collect::<Vec<_>>();
@@ -72,20 +51,21 @@ impl ImageData {
             .map(|xd| xd.to_struct().unwrap())
             .collect::<Vec<_>>();
 
-        println!("this is the uuid {}", self.uuid);
 
-        Image { 
+        Media { 
             uuid: Uuid::parse_str(&self.uuid).unwrap(), 
             original_name: self.original_name, 
             current_name: self.current_name, 
             extension: self.extension, 
             meta_data, 
-            xmp_data 
+            xmp_data,
+            media_type: MediaType::from_i8(self.media_type).unwrap(),
+            datetime_created: self.datetime_created
         }
     }
 }
 
-impl ImageMetaData {
+impl MediaMetaData {
     pub fn to_struct(self) -> Result<MetaData, ()> {
         Ok(MetaData { 
             uuid: Uuid::parse_str(&self.uuid).or(Err(()))?,
@@ -93,11 +73,9 @@ impl ImageMetaData {
             val: self.data_val
         })
     }
-
-
 }
 
-impl ImageXmpData {
+impl MediaXmpData {
     pub fn to_struct(self) -> Result<XmpData, ()> {
         Ok(XmpData { 
             uuid: Uuid::parse_str(&self.uuid).or(Err(()))?,

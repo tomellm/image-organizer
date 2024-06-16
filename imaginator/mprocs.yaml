@@ -1,0 +1,14 @@
+procs:
+  cmd:
+    shell: "/bin/zsh; . ./.env"
+  graph_db:
+    shell: "indradb-server rocksdb persist/indradb/indradb.rdb"
+    stop: {send-keys: ["<C-c>"]}
+  view:
+    shell: "cd view; trunk serve"
+    autostart: false
+    stop: {send-keys: ["<C-c>"]}
+  api: 
+    shell: "cd api; cargo watch -x run"
+    autostart: false
+    stop: {send-keys: ["<C-c>"]}

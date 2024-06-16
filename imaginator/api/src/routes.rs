@@ -1,30 +1,14 @@
-use cfg_if::cfg_if;
-use leptos::{server, ServerFnError};
-
-cfg_if! { if #[cfg(feature = "ssr")] {
-
-use crate::{db, state};
-use chrono::NaiveDateTime;
-use cloud_storage::{Client, client::ObjectClient};
-use dateparser::DateTimeUtc;
-use image::{io::Reader, codecs::jpeg::JpegEncoder};
-use indradb::{BulkInsertItem, QueryExt};
-use rayon::prelude::*;
-use axum::{
-    extract::{State, Path, Query},
-    Json,
-};
-use sqlx::{MySql, Pool};
-use futures::future;
-use tracing::{event, Level};
+use leptos::{server, server_fn::codec::Json, ServerFnError};
+use types::image::Media;
 use uuid::Uuid;
-use std::{sync::Arc, fs::DirEntry, collections::HashMap, io::Cursor, ops::Deref};
-use std::fs;
-use types::{args::{ImageCreateArgs, Pagination, GetManyPayload}, image::Media};
+
+use crate::state;
 
 #[server(
-    prefix = "/images",
-    endpoint = "read"
+    name = ReadMediaFromFs,
+    prefix = "/media",
+    endpoint = "read",
+    output = Json
 )]
 pub async fn read_images() -> Result<Vec<String>, ServerFnError> {
     let arr: Vec<String> = fs::read_dir(std::env!("IMAGES_DIR"))
@@ -34,31 +18,59 @@ pub async fn read_images() -> Result<Vec<String>, ServerFnError> {
     Ok(arr)
 }
 
+#[server(
+    name = GetOneByUuid,
+    prefix = "/media",
+    endpoint = ":uuid",
+    input = Json,
+    output = Json
+)]
 pub async fn get_one(
     State(database): State<state::Database>,
     Path(uuid): Path<Uuid>
-) -> Json<Result<Media, ()>> {
+) -> Result<Result<Media, ()>, ServerFnError> {
+
+
     let media = db::get_media(database.0, uuid).await;
-    Json(media)
+    Ok(media)
 }
 
+#[server(
+    name = GetManyMediaByUuid,
+    prefix = "/media",
+    endpoint = "/many",
+    input = Json,
+    output = Json
+)]
 pub async fn get_many(
     State(database): State<state::Database>,
     Json(uuids): Json<GetManyPayload>
-) -> Json<Result<Vec<Media>, ()>> {
-    Json(db::get_many_media(database.0, uuids.uuids).await)
+) -> Result<Result<Vec<Media>, ()>, ServerFnError> {
+    Ok(db::get_many_media(database.0, uuids.uuids).await)
 }
 
+#[server(
+    name = GetAllMedia,
+    endpoint = "media",
+    output = Json
+)]
 pub async fn get_all(
    State(database): State<state::Database> 
-) -> Json<Vec<Media>> {
+) -> Result<Vec<Media>, ServerFnError> {
     let images = db::get_all_medias(database.0).await.unwrap();
-    Json(images)
+    Ok(images)
 }
 
+#[server(
+    name = ReadMediaFromFsAndSave,
+    prefix = "/media",
+    endpoint = "read-and-save",
+    input = Json,
+    output = Json
+)]
 pub async fn read_and_save_images(
    State(database): State<state::Database> 
-) -> Json<(Vec<Media>, Vec<String>)> {
+) -> Result<(Vec<Media>, Vec<String>), ServerFnError> {
     let (successes, errors): (Vec<_>, Vec<_>) = fs::read_dir(std::env!("IMAGES_DIR"))
          .unwrap().into_iter().partition(Result::is_ok);
 
@@ -102,18 +114,18 @@ pub async fn read_and_save_images(
 
     let _ = db::save_medias(database.0.clone(), images.clone()).await;
 
-    Json((images, errors))
+    Ok((images, errors))
 }
 
-// camphoto_684387517 (5).jpg
-
-pub async fn read_image_stream() -> Vec<u8> {
-    fs::read("../../camphoto_684387517 (5).jpg").unwrap()
-}
-
+#[server(
+    name = ClearAllDBData,
+    prefix = "/all",
+    endpoint = "clear",
+    output = Json
+)]
 pub async fn clear(
     State(database): State<state::Database> 
-) -> Result<(), ()> {
+) -> Result<Result<(), ()>, ServerFnError> {
     let _ = sqlx::query!("truncate table media_data")
         .execute(&*database.0)
         .await 
@@ -133,40 +145,68 @@ pub async fn clear(
 
 }
 
+#[server(
+    name = SaveOne,
+    prefix = "/media",
+    endpoint = "",
+    input = Json,
+    output = Json
+)]
 pub async fn save_one(
     State(database): State<state::Database>,
     Json(input): Json<ImageCreateArgs>,
-    ) -> Json<Media> {
+    ) -> Result<Result<Media>, ServerFnError> {
     let image = Media::from_args(input);
     let _ = db::save_media(database.0, image.clone()).await;
 
-    Json(image)
+    Ok(image)
 }
 
+#[server(
+    name = GetAllImages,
+    prefix = "",
+    endpoint = "",
+    input = Json,
+    output = Json
+)]
 pub async fn get_all_images(
     State(database): State<state::Database>
-) -> Json<Result<Vec<Media>, ()>> {
-    Json(db::get_all_images(database.0).await)
+) -> Result<Result<Vec<Media>, ()>, ServerFnError> {
+    Ok(db::get_all_images(database.0).await)
 }
 
 
 
 
+#[server(
+    name = GetImagesPaginated,
+    prefix = "",
+    endpoint = "",
+    input = Json,
+    output = Json
+)]
 pub async fn get_images_paginated(
     State(database): State<state::Database>,
     pagination: Query<Pagination>
-) -> Json<Result<Option<Vec<Media>>, ()>> {
+) -> Result<Result<Option<Vec<Media>>, ()>, ServerFnError> {
     let pagination = pagination.0;
     event!(Level::DEBUG, "pagination {pagination:?}");
     let media = db::get_images_paginated(database.0, pagination).await;
     event!(Level::DEBUG, "number of images: {:?}", media.clone().unwrap().unwrap().len());
-    Json(media)
+    Ok(media)
 }
 
 
+#[server(
+    name = GetCount,
+    prefix = "",
+    endpoint = "",
+    input = Json,
+    output = Json
+)]
 pub async fn count_query(
     State(graph_db): State<state::GraphDB>,
-) -> Json<String> {
+) -> Result<String, ServerFnError> {
     let mut graph_db = graph_db.0.lock().await;
     let all_vert = graph_db.get(
         indradb::CountQuery::new(Box::new(indradb::Query::AllVertex)).unwrap()
@@ -176,12 +216,19 @@ pub async fn count_query(
     ).await.unwrap();
 
 
-    Json(format!("verts: {:?}, edges: {:?}", all_vert, all_edge))
+    Ok(format!("verts: {:?}, edges: {:?}", all_vert, all_edge))
 }
 
+#[server(
+    name = CreateGraphAction,
+    prefix = "",
+    endpoint = "",
+    input = Json,
+    output = Json
+)]
 pub async fn create_graph(
     State(state): State<state::ApiState>
-) -> Json<String> {
+) -> Result<String, ServerFnError> {
     let pool = state.databse.0;
     let mut graph_db = state.graph_db.0.lock().await;
 
@@ -228,12 +275,19 @@ pub async fn create_graph(
     let all_vert = graph_db.get(indradb::Query::AllVertex).await.unwrap();
     let all_edge = graph_db.get(indradb::Query::AllEdge).await.unwrap();
     
-    Json(format!("verts: {:?}, edges: {:?}", all_vert, all_edge))
+    Ok(format!("verts: {:?}, edges: {:?}", all_vert, all_edge))
 }
 
+#[server(
+    name = GetGraphProperties,
+    prefix = "",
+    endpoint = "",
+    input = Json,
+    output = Json
+)]
 pub async fn properties(
     State(graph_db): State<state::GraphDB>
-) -> Json<String> {
+) -> Result<String, ServerFnError> {
     let mut graph_db = graph_db.0.lock().await;
 
     /*let all_prop = graph_db.get(
@@ -246,12 +300,19 @@ pub async fn properties(
         indradb::AllVertexQuery.properties().unwrap()
     ).await.unwrap();
 
-    Json(format!("{:?}", all_prop))
+    Ok(format!("{:?}", all_prop))
 }
 
+#[server(
+    name = DeleteAllFromGraph,
+    prefix = "",
+    endpoint = "",
+    input = Json,
+    output = Json
+)]
 pub async fn delete_all(
     State(graph_db): State<state::GraphDB>
-) -> Json<String> {
+) -> Result<String, ServerFnError> {
     let mut graph_db = graph_db.0.lock().await;
     graph_db.delete(indradb::Query::AllEdge).await.unwrap();
     graph_db.delete(indradb::Query::AllVertex).await.unwrap();
@@ -261,6 +322,5 @@ pub async fn delete_all(
     let all_vert = graph_db.get(indradb::Query::AllVertex).await.unwrap();
     let all_edge = graph_db.get(indradb::Query::AllEdge).await.unwrap();
     
-    Json(format!("verts: {:?}, edges: {:?}", all_vert, all_edge))
+    Ok(format!("verts: {:?}, edges: {:?}", all_vert, all_edge))
 }
-}}

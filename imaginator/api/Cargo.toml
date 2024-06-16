@@ -15,17 +15,17 @@ opt-level = 3
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-axum = { version = "0.7.4", features = ["query", "macros"], optional = true }
-axum-server = { version = "0.5.0", features = ["tls-rustls"], optional = true }
+axum = { version = "0.7.5", features = ["query", "macros"], optional = true }
+axum-server = { version = "0.6.0", features = ["tls-rustls"], optional = true }
 
-leptos = { version = "0.6.5", features = [] }
-leptos_axum = { version = "0.6.5", optional = true }
-leptos_meta = { version = "0.6.5", features = [] }
-leptos_router = { version = "0.6.5", features = [] }
+leptos = { version = "0.6.12", features = [] }
+leptos_axum = { version = "0.6.12", optional = true }
+leptos_meta = { version = "0.6.12", features = [] }
+leptos_router = { version = "0.6.12", features = [] }
 leptonic = { version = "0.5.0", git = "https://github.com/lpotthast/leptonic", branch = "main", features = [] }
 
-tokio = { version = "1.35.1", features = ["full"], optional = true }
-tokio-util = { version = "0.7.9", features = ["io"], optional = true }
+tokio = { version = "1.38.0", features = ["full"], optional = true }
+tokio-util = { version = "0.7.11", features = ["io"], optional = true }
 
 console_error_panic_hook = "0.1.7"
 tracing = "0.1.40"
@@ -33,30 +33,31 @@ tracing-subscriber = "0.3.18"
 tracing-wasm = "0.2.1"
 
 tower = { version = "0.4.13", features = ["util", "timeout"], optional=true }
-tower-http = { version = "0.5.1", features = ["full"], optional=true }
+tower-http = { version = "0.5.2", features = ["full"], optional=true }
 
-sqlx = { version = "0.7.3", features = ["runtime-tokio", "mysql", "chrono", "tls-rustls", "macros"], optional = true  }
+sqlx = { version = "0.7.4", features = ["runtime-tokio", "mysql", "chrono", "tls-rustls", "macros"], optional = true  }
 cloud-storage = { version = "0.11.1", optional = true }
 indradb-proto = { version = "4.0.0", optional = true }
 indradb = { version = "4.0.0", optional = true }
 indradb-lib = { version = "4.0.0", features = ["rocksdb-datastore"], optional = true  }
 
 cfg-if = "1"
-http = "1.0.0"
-serde = "1.0.195"
-serde_json = "1.0.113"
+http = "1.1.0"
+serde = "1.0.203"
+serde_json = "1.0.117"
 tonic = { version = "0.10.2", optional = true }
 futures = "0.3.30"
 dotenv = { version = "0.15.0", optional = true }
-time = { version = "=0.3.31", features = ["wasm-bindgen"] }
-chrono = "0.4.31"
-uuid = { version = "1.6.1", features = ["v7", "serde"] }
-rayon = { version = "1.8.1", optional = true }
+time = { version = "0.3.36", features = ["wasm-bindgen"] }
+chrono = "0.4.38"
+uuid = { version = "1.8.0", features = ["v7", "serde"] }
+rayon = { version = "1.10.0", optional = true }
+libc = { version = "0.2.155", optional = true }
 
-types = { path = "../types" , optional = true }
-image = { version = "0.24.7", optional = true }
+types = { path = "../types" }
+image = { version = "0.24.9", optional = true }
 dateparser = "0.2.1"
-thiserror = "1.0.56"
+thiserror = "1.0.61"
 
 [features]
 hydrate = [
@@ -81,6 +82,7 @@ ssr = [
     "dep:tonic",
     "dep:dotenv",
     "dep:rayon",
+    "dep:libc",
     "types/backend",
     "leptos/ssr",
     "leptos_meta/ssr",

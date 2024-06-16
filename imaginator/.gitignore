@@ -1,3 +1,6 @@
 **/target
 **/.env
 **/Cargo.lock
+/persist
+
+keys/
