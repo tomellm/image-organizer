@@ -1,0 +1,13 @@
+[package]
+name = "postgres-adapter"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+chrono = "0.4.38"
+serde = "1.0.203"
+sqlx = { version = "0.7.4", features = ["chrono"] }
+uuid = "1.8.0"
+imaginator_types = { path = "../../imaginator_types" }
+tracing = "0.1.40"
+futures = "0.3.30"
