@@ -1,9 +1,12 @@
 [workspace]
 
 members = [
-    "api",
-    "view",
-    "types"
+    "imaginator_importer",
+    "imaginator_app",
+    "imaginator_egui",
+    "imaginator_types",
+    "adapters/postgres_adapter",
+    "adapters/indradb_adapter"
 ]
 
 resolver="2"

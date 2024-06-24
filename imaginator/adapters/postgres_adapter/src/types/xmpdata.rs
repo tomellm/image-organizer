@@ -35,7 +35,7 @@ impl TryFrom<MediaXmpData> for XmpData {
     type Error = ();
     fn try_from(value: MediaXmpData) -> Result<Self, Self::Error> {
         Ok(XmpData {
-            uuid: Uuid::from_db(value.uuid)?,
+            uuid: Uuid::from_db(&value.uuid)?,
             key: value.data_key,
             val: value.data_val,
         })

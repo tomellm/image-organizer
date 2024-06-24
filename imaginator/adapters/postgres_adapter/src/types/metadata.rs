@@ -35,7 +35,7 @@ impl TryFrom<MediaMetaData> for MetaData {
     type Error = ();
     fn try_from(data: MediaMetaData) -> Result<Self, Self::Error> {
         Ok(Self {
-            uuid: Uuid::from_db(data.uuid)?,
+            uuid: Uuid::from_db(&data.uuid)?,
             key: data.data_key,
             val: data.data_val,
         })

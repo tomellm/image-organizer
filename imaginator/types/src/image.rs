@@ -24,28 +24,28 @@ pub struct Media {
     pub meta_data: Vec<MetaData>,
     pub xmp_data: Vec<XmpData>,
     pub media_type: MediaType,
-    pub datetime_created: Option<DateTime<Utc>>
+    pub datetime_created: Option<DateTime<Utc>>,
 }
 
 impl Media {
     pub fn from_args(args: ImageCreateArgs) -> Self {
-        let meta_data = args.meta_data.into_iter()
+        let meta_data = args
+            .meta_data
+            .into_iter()
             .map(MetaData::from_args)
             .collect();
-        let xmp_data = args.xmp_data.into_iter()
-            .map(XmpData::from_args)
-            .collect();
+        let xmp_data = args.xmp_data.into_iter().map(XmpData::from_args).collect();
         let media_type = MediaType::from_ext(args.extension.clone().as_str());
-        let datetime_created = Self::get_most_likely_date(
-            &meta_data, &xmp_data
-        );
+        let datetime_created = Self::get_most_likely_date(&meta_data, &xmp_data);
         Self {
             uuid: Uuid::new_v4(),
             original_name: args.original_name,
             current_name: args.current_name,
             extension: args.extension,
-            meta_data, xmp_data,
-            media_type, datetime_created
+            meta_data,
+            xmp_data,
+            media_type,
+            datetime_created,
         }
     }
 
@@ -102,7 +102,7 @@ impl Media {
             current_name: self.current_name,
             extension: self.extension,
             media_type: self.media_type.to_db(),
-            datetime_created: self.datetime_created
+            datetime_created: self.datetime_created,
         };
 
         (image_data, meta_data, xmp_data)
@@ -117,7 +117,7 @@ impl Media {
 
     fn get_most_likely_date(
         meta_data: &Vec<MetaData>,
-        xmp_data: &Vec<XmpData>
+        xmp_data: &Vec<XmpData>,
     ) -> Option<DateTime<Utc>> {
         let meta_min = meta_data
             .iter()

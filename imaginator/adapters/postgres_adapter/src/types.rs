@@ -38,7 +38,7 @@ impl From<MediaUnwrapped> for Media {
             .collect::<Vec<_>>();
 
         Media {
-            uuid: Uuid::from_db(media.uuid).unwrap(),
+            uuid: Uuid::from_db(&media.uuid).unwrap(),
             original_name: media.original_name,
             current_name: media.current_name,
             extension: media.extension,
@@ -87,12 +87,12 @@ impl From<Media> for MediaUnwrapped {
 }
 
 pub(crate) trait FromDBUuid {
-    fn from_db(value: String) -> Result<Uuid, ()>;
+    fn from_db(value: &String) -> Result<Uuid, ()>;
 }
 
 impl FromDBUuid for Uuid {
-    fn from_db(value: String) -> Result<Uuid, ()> {
-        Uuid::parse_str(&value).or(Err(()))
+    fn from_db(value: &String) -> Result<Uuid, ()> {
+        Uuid::parse_str(value).or(Err(()))
     }
 }
 

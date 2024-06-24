@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use sqlx::{QueryBuilder, MySql, Type, Encode, Pool};
+use sqlx::{mysql::MySqlQueryResult, Encode, MySql, Pool, QueryBuilder, Type, error::Error};
 use serde::{Deserialize, Serialize};
 
 use crate::types::mediatype::DBEnum;
@@ -52,4 +52,21 @@ where
     query_builder.push(query_back);
 
     query_builder
+}
+
+
+pub trait LogMysqlError<T> {
+    fn log_err(self, err_text: &str) -> Result<T, ()>;
+}
+
+impl<T> LogMysqlError<T> for Result<T, Error> {
+    fn log_err(self, err_text: &str) -> Result<T, ()> {
+        self.map_err(|err| {
+            tracing::event!(
+                tracing::Level::ERROR,
+                "ERROR: {}. {}",
+                err_text, err
+            )
+        })
+    }
 }

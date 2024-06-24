@@ -4,7 +4,7 @@ use std::sync::Arc;
 use sqlx::{MySql, Pool, QueryBuilder};
 use uuid::Uuid;
 
-use crate::types::{xmpdata::MediaXmpData, FromDBUuid, IntoDBUuid};
+use crate::{types::{xmpdata::MediaXmpData, FromDBUuid, IntoDBUuid}, util::LogMysqlError};
 
 const BIND_LIMIT: usize = 10000;
 const BLOCK_LENGTH: usize = BIND_LIMIT / 4; // 4 because XmpData has 4 attributes
@@ -30,7 +30,7 @@ pub async fn get_by_str_medias(
     pool: Arc<Pool<MySql>>,
     uuids: &Vec<String>,
 ) -> Result<HashMap<Uuid, Vec<MediaXmpData>>, ()> {
-    let mut query_builder = QueryBuilder::new("select * from xmpdata where media_uuid in (");
+    let mut query_builder = QueryBuilder::new("select * from xmp_data where media_uuid in (");
 
     uuids.into_iter().enumerate().for_each(|(index, uuid)| {
         if index != 0 {
@@ -44,19 +44,13 @@ pub async fn get_by_str_medias(
         .build_query_as::<MediaXmpData>()
         .fetch_all(&*pool)
         .await
-        .map_err(|err| {
-            tracing::event!(
-                tracing::Level::ERROR,
-                "get_by_str_images failed to execute query. {}",
-                err
-            )
-        })?;
+        .log_err("get_by_str_images failed to execute query")?;
 
     let mut map: HashMap<Uuid, Vec<MediaXmpData>> = HashMap::new();
 
     //TODO: properly handle the unwrap here!
     data.into_iter().for_each(|d| {
-        let uuid = Uuid::from_db(d.media_uuid.clone()).unwrap();
+        let uuid = Uuid::from_db(&d.media_uuid).unwrap();
         match map.get_mut(&uuid) {
             None => drop(map.insert(uuid, vec![d])),
             Some(vec) => drop(vec.push(d)),
@@ -67,17 +61,11 @@ pub async fn get_by_str_medias(
 }
 
 pub async fn get_by_media(pool: Arc<Pool<MySql>>, uuid: Uuid) -> Result<Vec<MediaXmpData>, ()> {
-    let out = sqlx::query_as("select * from xmpdata where media_uuid = ?")
+    let out = sqlx::query_as("select * from xmp_data where media_uuid = ?")
         .bind(uuid.into_db())
         .fetch_all(&*pool)
         .await
-        .map_err(|err| {
-            tracing::event!(
-                tracing::Level::ERROR,
-                "ERROR: get_by_image failed to execute query. {}",
-                err
-            )
-        })?;
+        .log_err("get_by_image failed to execute query")?;
 
     Ok(out)
 }
@@ -102,7 +90,7 @@ pub async fn save_many(pool: Arc<Pool<MySql>>, xmp_data: Vec<MediaXmpData>) -> R
                         index,
                         (
                             QueryBuilder::new(
-                                "insert into xmpdata (uuid, media_uuid, data_key, data_val)",
+                                "insert into xmp_data (uuid, media_uuid, data_key, data_val)",
                             ),
                             vec![],
                         ),
@@ -127,13 +115,7 @@ pub async fn save_many(pool: Arc<Pool<MySql>>, xmp_data: Vec<MediaXmpData>) -> R
         futures.push(query.execute(&*pool));
     }
     for future in futures {
-        future.await.map_err(|err| {
-            tracing::event!(
-                tracing::Level::ERROR,
-                "ERROR: save_many failed to execute query. {}",
-                err
-            )
-        })?;
+        future.await.log_err("save_many failed to execute query")?;
     }
 
     Ok(())
@@ -142,7 +124,7 @@ pub async fn save_many(pool: Arc<Pool<MySql>>, xmp_data: Vec<MediaXmpData>) -> R
 pub async fn save_one(pool: Arc<Pool<MySql>>, xmp_data: MediaXmpData) -> Result<MediaXmpData, ()> {
     let _ = sqlx::query(
         r#"
-        insert into images_xmpdata
+        insert into images_xmp_data
             (uuid, data_key, data_val)
         values
             (?, ?, ?);
@@ -153,30 +135,27 @@ pub async fn save_one(pool: Arc<Pool<MySql>>, xmp_data: MediaXmpData) -> Result<
     .bind(&xmp_data.data_val)
     .execute(&*pool)
     .await
-    .map_err(|err| {
-        tracing::event!(
-            tracing::Level::ERROR,
-            "ERROR: save_one failed to execute query. {}",
-            err
-        )
-    })?;
+    .log_err("save_one failed to execute query")?;
 
     Ok(xmp_data)
 }
 
 pub async fn get_all_dates(pool: Arc<Pool<MySql>>) -> Result<Vec<MediaXmpData>, ()> {
     sqlx::query_as(
-        r#"select * from xmpdata where data_key in
+        r#"select * from xmp_data where data_key in
             ('photoshop:DateCreated')
         "#
     )
     .fetch_all(&*pool)
     .await
-    .map_err(|err| {
-        tracing::event!(
-            tracing::Level::ERROR,
-            "ERROR: get_all_dates failed to execute query. {}",
-            err
-        )
-    })
+    .log_err("get_all_dates failed to execute query") 
+}
+
+pub async fn delete_all(pool: Arc<Pool<MySql>>) -> Result<(), ()> {
+    let _ = sqlx::query("truncate table xmp_data")
+        .execute(&*pool)
+        .await
+        .log_err("delete_all failed to execute")?;
+
+    Ok(())
 }

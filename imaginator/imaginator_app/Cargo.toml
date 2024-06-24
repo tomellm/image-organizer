@@ -1,0 +1,9 @@
+[package]
+name = "imaginator_app"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+sqlx = "0.7.4"
+imaginator_types = { path = "../imaginator_types" }
+postgres_adapter = { path = "../adapters/postgres_adapter" }

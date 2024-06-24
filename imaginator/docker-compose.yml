@@ -1,0 +1,16 @@
+version: '3.9'
+name: 'imaginator-infrastructure'
+services:
+  databases:
+    image: mysql:8.1.0
+    restart: no
+    environment:
+      MYSQL_DATABASE: 'imaginator'
+      MYSQL_USER: 'user'
+      MYSQL_PASSWORD: 'password'
+      MYSQL_ROOT_PASSWORD: 'password'
+    ports:
+      - '5432:3306'
+    volumes:
+      - ./infrastructure/db_init:/docker-entrypoint-initdb.d
+      - ./infrastructure/mysql:/var/lib/mysql

@@ -1,0 +1,13 @@
+[package]
+name = "imaginator_importer"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+imaginator_types = { path = "../imaginator_types" }
+serde = "1.0.203"
+sqlx = { version = "0.7.4", features = ["mysql", "chrono", "tls-rustls"] }
+tracing = "0.1.40"
+uuid = { version = "1.8.0", features = ["v4"] }
+postgres_adapter = { path = "../adapters/postgres_adapter" }
+

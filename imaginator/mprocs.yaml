@@ -1,14 +1,21 @@
 procs:
-  cmd:
-    shell: "/bin/zsh; . ./.env"
   graph_db:
     shell: "indradb-server rocksdb persist/indradb/indradb.rdb"
     stop: {send-keys: ["<C-c>"]}
-  view:
-    shell: "cd view; trunk serve"
-    autostart: false
+  db_interface:
+    shell: "nvim"
+  docker_infra:
+    shell: "docker-compose up"
     stop: {send-keys: ["<C-c>"]}
-  api: 
-    shell: "cd api; cargo watch -x run"
+  clean_infra:
+    shell: "docker-compose down"
     autostart: false
-    stop: {send-keys: ["<C-c>"]}
+#
+# view:
+#   shell: "cd view; trunk serve"
+#   autostart: false
+#   stop: {send-keys: ["<C-c>"]}
+# api: 
+#   shell: "cd api; cargo watch -x run"
+#   autostart: false
+#   stop: {send-keys: ["<C-c>"]}

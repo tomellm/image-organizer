@@ -5,7 +5,7 @@ use sqlx::{MySql, Pool, QueryBuilder};
 use tracing::{event, Level};
 use uuid::Uuid;
 
-use crate::types::{mediatype::DBEnum, IntoDBUuid, MediaData};
+use crate::{types::{mediatype::DBEnum, IntoDBUuid, MediaData}, util::LogMysqlError};
 
 use super::util;
 
@@ -25,13 +25,7 @@ pub async fn save_one(pool: Arc<Pool<MySql>>, image: MediaData) -> Result<(), ()
     .bind(&image.media_type)
     .execute(&*pool)
     .await
-    .map_err(|err| {
-        tracing::event!(
-            tracing::Level::ERROR,
-            "ERROR: save_one failed to execute query. {}",
-            err
-        )
-    })?;
+    .log_err("save_one failed to execute query")?;
 
     Ok(())
 }
@@ -88,13 +82,7 @@ pub async fn save_many(pool: Arc<Pool<MySql>>, images: Vec<MediaData>) -> Result
         futures.push(query.execute(&*pool));
     }
     for future in futures {
-        future.await.map_err(|err| {
-            tracing::event!(
-                tracing::Level::ERROR,
-                "ERROR: save_many failed to execute query. {}",
-                err
-            )
-        })?;
+        future.await.log_err("save_many failed to execute query")?;
     }
 
     Ok(())
@@ -104,13 +92,7 @@ pub async fn get_all(pool: Arc<Pool<MySql>>) -> Result<Vec<MediaData>, ()> {
     let out = sqlx::query_as("select * from media_data")
         .fetch_all(&*pool)
         .await
-        .map_err(|err| {
-            tracing::event!(
-                tracing::Level::ERROR,
-                "ERROR: get_all failed to execute query. {}",
-                err
-            )
-        })?;
+        .log_err("get_all failed to execute query")?;
     Ok(out)
 }
 
@@ -126,13 +108,8 @@ pub async fn get_many(pool: Arc<Pool<MySql>>, uuids: Vec<Uuid>) -> Result<Vec<Me
 
     let sql = query_builder.build_query_as::<MediaData>();
 
-    sql.fetch_all(&*pool).await.map_err(|err| {
-        tracing::event!(
-            tracing::Level::DEBUG,
-            "get_many failed to execute query {}",
-            err
-        )
-    })
+    sql.fetch_all(&*pool).await
+        .log_err("get_many failed to execute query")
 }
 
 pub async fn get_all_images(pool: Arc<Pool<MySql>>) -> Result<Vec<MediaData>, ()> {
@@ -158,13 +135,7 @@ pub async fn get_all_images(pool: Arc<Pool<MySql>>) -> Result<Vec<MediaData>, ()
         .build_query_as::<MediaData>()
         .fetch_all(&*pool)
         .await
-        .map_err(|err| {
-            tracing::event!(
-                tracing::Level::ERROR,
-                "ERROR: get_all failed to execute query. {}",
-                err
-            )
-        })
+        .log_err("get_all failed to execute query")
 }
 
 pub async fn get_images_paginated(
@@ -194,13 +165,7 @@ pub async fn get_images_paginated(
         .build_query_as::<MediaData>()
         .fetch_all(&*pool)
         .await
-        .map_err(|err| {
-            tracing::event!(
-                tracing::Level::ERROR,
-                "ERROR: get_all failed to execute query. {}",
-                err
-            )
-        })
+        .log_err("get_all failed to execute query")
         .map(|v| Some(v))
 }
 
@@ -209,13 +174,16 @@ pub async fn get_one(pool: Arc<Pool<MySql>>, uuid: Uuid) -> Result<MediaData, ()
         .bind(uuid.into_db())
         .fetch_one(&*pool)
         .await
-        .map_err(|err| {
-            tracing::event!(
-                tracing::Level::ERROR,
-                "ERROR: get_one failed to execute query. {}",
-                err
-            )
-        })?;
+        .log_err("get_one failed to execute query")?;
 
     Ok(out)
+}
+
+pub async fn delete_all(pool: Arc<Pool<MySql>>) -> Result<(), ()> {
+    let _ = sqlx::query("truncate table media_data")
+        .execute(&*pool)
+        .await
+        .log_err("delete_all failed to execute")?;
+
+    Ok(())
 }
