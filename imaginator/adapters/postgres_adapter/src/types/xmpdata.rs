@@ -2,6 +2,8 @@ use imaginator_types::xmpdata::XmpData;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+use crate::util::DatabaseUtilities;
+
 use super::{FromDBUuid, IntoDBUuid};
 
 #[derive(Clone, Debug, Deserialize, Serialize, sqlx::FromRow)]
@@ -39,5 +41,23 @@ impl TryFrom<MediaXmpData> for XmpData {
             key: value.data_key,
             val: value.data_val,
         })
+    }
+}
+
+impl DatabaseUtilities for MediaXmpData {
+    fn db_table_name() -> &'static str {
+        "xmp_data"
+    }
+    fn db_column_names() -> &'static [&'static str] {
+        &["uuid", "media_uuid", "data_key", "data_val"]
+    }
+    fn db_push_touple_fn(
+    ) -> impl FnMut(sqlx::query_builder::Separated<'_, '_, sqlx::MySql, &'static str>, Self) {
+        |mut b, xmp| {
+            b.push_bind(xmp.uuid);
+            b.push_bind(xmp.media_uuid);
+            b.push_bind(xmp.data_key);
+            b.push_bind(xmp.data_val);
+        }
     }
 }

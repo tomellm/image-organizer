@@ -4,13 +4,24 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-eframe = "0.27.2"
-egui = "0.27.2"
-lazy_async_promise = "0.5.0"
 imaginator_importer = { path = "../imaginator_importer" }
 imaginator_app = { path = "../imaginator_app" }
 imaginator_types = { path = "../imaginator_types" }
+
+postgres_adapter = { path = "../adapters/postgres_adapter" }
+
+# data_communicator = { git = "https://github.com/tomellm/data_communicator.git", branch = "tom/buffered-init" }
+data_communicator = { path = "../../../data_communicator" }
+
+
+eframe = "0.28.1"
+egui = "0.28.1"
+lazy_async_promise = "0.5.0"
 sqlx = { version = "0.7.4", features = ["mysql", "runtime-tokio"] }
 tokio = "1.38.0"
 tracing = "0.1.40"
 tracing-subscriber = "0.3.18"
+uuid = { version = "1.10.0", features = ["v4"] }
+futures = "0.3.30"
+egui_extras = { version = "0.28.1", features = ["all_loaders"] }
+image = { version = "0.25.1", features = ["jpeg", "png"] }

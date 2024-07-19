@@ -1,7 +1,6 @@
-pub(crate) mod xmpdata;
-pub(crate) mod metadata;
 pub(crate) mod mediatype;
-
+pub(crate) mod metadata;
+pub(crate) mod xmpdata;
 
 use chrono::{DateTime, Utc};
 use imaginator_types::media::Media;
@@ -10,6 +9,8 @@ use metadata::MediaMetaData;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use xmpdata::MediaXmpData;
+
+use crate::util::DatabaseUtilities;
 
 #[derive(Clone, Debug, Deserialize, Serialize, sqlx::FromRow)]
 pub struct MediaData {
@@ -20,8 +21,6 @@ pub struct MediaData {
     pub media_type: i8,
     pub datetime_created: Option<DateTime<Utc>>,
 }
-
-
 
 pub struct MediaUnwrapped(pub MediaData, pub Vec<MediaMetaData>, pub Vec<MediaXmpData>);
 
@@ -103,5 +102,32 @@ pub(crate) trait IntoDBUuid {
 impl IntoDBUuid for Uuid {
     fn into_db(self) -> String {
         self.simple().to_string()
+    }
+}
+
+impl DatabaseUtilities for MediaData {
+    fn db_table_name() -> &'static str {
+        "media_data"
+    }
+    fn db_column_names() -> &'static [&'static str] {
+        &[
+            "uuid",
+            "original_name",
+            "current_name",
+            "extension",
+            "media_type",
+            "datetime_created",
+        ]
+    }
+    fn db_push_touple_fn(
+    ) -> impl FnMut(sqlx::query_builder::Separated<'_, '_, sqlx::MySql, &'static str>, Self) {
+        |mut b, img| {
+            b.push_bind(img.uuid);
+            b.push_bind(img.original_name);
+            b.push_bind(img.current_name);
+            b.push_bind(img.extension);
+            b.push_bind(img.media_type);
+            b.push_bind(img.datetime_created);
+        }
     }
 }

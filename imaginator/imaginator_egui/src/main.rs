@@ -1,8 +1,12 @@
+#![feature(iter_array_chunks)]
+
 use eframe::NativeOptions;
 use egui::ViewportBuilder;
 use imaginator::Imaginator;
 
 mod imaginator;
+mod util;
+mod components;
 
 #[tokio::main]
 async fn main() {
@@ -12,10 +16,14 @@ async fn main() {
         viewport: ViewportBuilder::default().with_drag_and_drop(true),
         ..Default::default()
     };
+    let imaginator = Imaginator::new().await;
     let _ = eframe::run_native(
         "My egui App",
         options,
-        Box::new(|_cc| Box::<Imaginator>::default()),
+        Box::new(|cc| {
+            egui_extras::install_image_loaders(&cc.egui_ctx);
+            Ok(Box::new(imaginator))
+        }),
     );
 }
 

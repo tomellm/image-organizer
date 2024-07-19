@@ -10,6 +10,7 @@ procs:
   clean_infra:
     shell: "docker-compose down"
     autostart: false
+
 #
 # view:
 #   shell: "cd view; trunk serve"

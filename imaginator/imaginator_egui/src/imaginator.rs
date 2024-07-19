@@ -1,20 +1,26 @@
-use std::sync::Arc;
-
-use imaginator_types::media::Media;
-use lazy_async_promise::{ImmediateValuePromise, ImmediateValueState};
-use sqlx::{MySql, MySqlPool, Pool};
+use data_communicator::buffered::{communicator::Communicator, query::QueryType};
+use egui::{Image, ImageSource, Rect, Ui};
+use egui_extras::{install_image_loaders, StripBuilder};
+use imaginator_importer::adapters::mysql_adapter::DB;
+use imaginator_types::{
+    media::Media,
+    mediatypes::{ImageType, MediaType},
+};
+use sqlx::MySqlPool;
 use tokio::{runtime::Handle, task};
+use tracing::info;
+use uuid::Uuid;
+
+use crate::{components::media::MediaCard, util::create_grid};
 
 pub struct Imaginator {
     selected_dir: String,
-    parsed_media: Option<ImmediateValuePromise<Vec<Media>>>,
-    pool: Arc<Pool<MySql>>,
-    images: Vec<String>,
-    delete_all_task: Option<ImmediateValuePromise<()>>
+    db: DB,
+    media_comm: Communicator<Uuid, Media>,
 }
 
-impl Default for Imaginator {
-    fn default() -> Self {
+impl Imaginator {
+    pub async fn new() -> Self {
         let conn_str = "mysql://root:password@localhost:5432/imaginator";
 
         let conn = task::block_in_place(|| {
@@ -23,40 +29,42 @@ impl Default for Imaginator {
                 .unwrap()
         });
 
+        let mut db = DB::init(conn).await;
+        let media_comm = db.media.communicator();
+        media_comm.query(QueryType::predicate(|media: &Media| {
+            Some(ImageType::HEIC) != media.media_type.image() && media.media_type.is_image()
+        }));
+
         Self {
-            pool: Arc::new(conn),
             selected_dir: String::new(),
-            parsed_media: None,
-            images: vec![],
-            delete_all_task: None
+            db,
+            media_comm,
         }
     }
 }
 
 impl eframe::App for Imaginator {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        if let Some(ref mut media) = self.parsed_media {
-            match media.poll_state() {
-                ImmediateValueState::Success(new_media) => {
-                    let to_add = new_media.into_iter()
-                        .filter(|e| e.extension.to_uppercase().eq("JPG"))
-                        .map(|e| e.current_name.clone())
-                        .take(10)
-                        .collect::<Vec<_>>();
-                    self.images.extend(to_add);
-                },
-                _ => ()
-            }
-        }
+        self.db.state_update();
+        self.media_comm.state_update();
 
-
-        egui::TopBottomPanel::top("wrap_app_top_bar").show(ctx, |ui| {
+        egui::CentralPanel::default().show(ctx, |ui| {
             egui::ScrollArea::vertical().show(ui, |ui| {
                 ui.add(egui::TextEdit::singleline(&mut self.selected_dir));
                 if ui.button("load stuff").clicked() {
                     self.parse_dir();
                 }
-                ui.label(format!("len {}", self.images.len()));
+                ui.label(format!("len {}", self.media_comm.data.data.len()));
+
+                create_grid(
+                    ui,
+                    self.media_comm
+                        .data
+                        .data
+                        .iter()
+                        .map(|(_, media)| MediaCard::from(media))
+                        .collect::<Vec<_>>(),
+                )
             });
         });
     }
@@ -64,21 +72,25 @@ impl eframe::App for Imaginator {
 
 impl Imaginator {
     pub fn delete_all(&mut self) {
+        self.media_comm.delete_many(
+            self.media_comm
+                .data
+                .data
+                .keys()
+                .map(|k| *k)
+                .collect::<Vec<_>>(),
+        );
     }
     pub fn parse_dir(&mut self) {
-        let new_pool = self.pool.clone();
         let dir = self.selected_dir.clone();
-        self.parsed_media = Some(ImmediateValuePromise::new(async move {
-            let result_one = imaginator_importer::scan_path_and_save(new_pool.clone(), dir).await;
-            if !result_one.is_empty() {
-                tracing::event!(
-                    tracing::Level::ERROR,
-                    "Saving images cause {} errors",
-                    result_one.len()
-                );
-            }
-
-            Ok(imaginator_app::view_all_media(new_pool).await.unwrap())
-        }));
+        let result_one = imaginator_importer::scan_path_and_save(dir, &mut self.media_comm);
+        if !result_one.is_empty() {
+            tracing::event!(
+                tracing::Level::ERROR,
+                "Saving images caused {} errors",
+                result_one.len()
+            );
+        }
+        self.media_comm.query(QueryType::predicate(|_| true));
     }
 }

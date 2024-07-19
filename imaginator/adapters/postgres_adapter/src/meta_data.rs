@@ -4,7 +4,10 @@ use std::sync::Arc;
 use sqlx::{MySql, Pool, QueryBuilder};
 use uuid::Uuid;
 
-use crate::{types::{metadata::MediaMetaData, FromDBUuid, IntoDBUuid}, util::LogMysqlError};
+use crate::{
+    types::{metadata::MediaMetaData, FromDBUuid, IntoDBUuid},
+    util::{self, add_in_items, AdapterFuture, AwaitQueryResponses, LogMysqlError},
+};
 
 const BIND_LIMIT: usize = 10000;
 const BLOCK_LENGTH: usize = BIND_LIMIT / 4; // 4 because MetaData has 4 attributes
@@ -13,17 +16,14 @@ pub async fn get_by_images(
     pool: Arc<Pool<MySql>>,
     uuids: &Vec<Uuid>,
 ) -> Result<HashMap<Uuid, Vec<MediaMetaData>>, ()> {
-    get_by_str_medias(
-        pool,
-        &uuids.iter().map(|u| u.into_db()).collect(),
-    )
-    .await
-    .map_err(|_| {
-        tracing::event!(
-            tracing::Level::ERROR,
-            "get_by_images failed to execute query."
-        )
-    })
+    get_by_str_medias(pool, &uuids.iter().map(|u| u.into_db()).collect())
+        .await
+        .map_err(|_| {
+            tracing::event!(
+                tracing::Level::ERROR,
+                "get_by_images failed to execute query."
+            )
+        })
 }
 
 pub async fn get_by_str_medias(
@@ -69,55 +69,11 @@ pub async fn get_by_media(pool: Arc<Pool<MySql>>, uuid: Uuid) -> Result<Vec<Medi
     Ok(out)
 }
 
-pub async fn save_many(pool: Arc<Pool<MySql>>, meta_data: Vec<MediaMetaData>) -> Result<(), ()> {
-    if meta_data.len() == 0 {
-        return Ok(());
-    }
-
-    let mut chunks = meta_data.into_iter().enumerate().fold(
-        vec![],
-        |mut acc: Vec<(QueryBuilder<MySql>, Vec<MediaMetaData>)>,
-         (pos, data): (usize, MediaMetaData)| {
-            let index = (pos as f32 / BLOCK_LENGTH as f32).floor() as usize;
-            let inner_index = (pos as f32 % BLOCK_LENGTH as f32) as usize;
-            match acc.get_mut(index) {
-                Some(inner_vec) => {
-                    inner_vec.1.insert(inner_index, data);
-                }
-                None => {
-                    acc.insert(
-                        index,
-                        (
-                            QueryBuilder::new(
-                                "insert into meta_data (uuid, media_uuid, data_key, data_val)",
-                            ),
-                            vec![],
-                        ),
-                    );
-                    let inner_vec = acc.get_mut(index).unwrap();
-                    inner_vec.1.insert(inner_index, data);
-                }
-            }
-            acc
-        },
-    );
-    let mut futures = vec![];
-    for (ref mut query_builder, chunk) in chunks.iter_mut() {
-        query_builder.push_values(chunk, |mut b, meta| {
-            b.push_bind(meta.uuid.clone());
-            b.push_bind(meta.media_uuid.clone());
-            b.push_bind(meta.data_key.clone());
-            b.push_bind(meta.data_val.clone());
-        });
-
-        let query = query_builder.build();
-        futures.push(query.execute(&*pool));
-    }
-    //TODO: await all of these futures at the same time
-    for future in futures {
-        future.await.log_err("save_many failed to execute query")?;
-    }
-    Ok(())
+pub fn save_many(
+    pool: Arc<Pool<MySql>>,
+    meta_data: Vec<MediaMetaData>,
+) -> impl AdapterFuture<Result<(), ()>> {
+    util::query::save_many(pool, meta_data)
 }
 
 pub async fn save_one(
@@ -150,7 +106,7 @@ pub async fn get_all_dates(pool: Arc<Pool<MySql>>) -> Result<Vec<MediaMetaData>,
     )
     .fetch_all(&*pool)
     .await
-    .log_err("get_all_dates failed to execute query") 
+    .log_err("get_all_dates failed to execute query")
 }
 
 pub async fn delete_all(pool: Arc<Pool<MySql>>) -> Result<(), ()> {
@@ -160,4 +116,28 @@ pub async fn delete_all(pool: Arc<Pool<MySql>>) -> Result<(), ()> {
         .log_err("delete_all failed to execute")?;
 
     Ok(())
+}
+
+pub fn delete_many_by_media(pool: Arc<Pool<MySql>>, keys: Vec<Uuid>) -> impl AdapterFuture<Result<(), ()>> {
+    async move {
+        if keys.len() == 0 {
+            return Ok(());
+        }
+        keys.chunks(BIND_LIMIT)
+            .map(|chunk| {
+                let keys_chunk = chunk
+                    .into_iter()
+                    .map(|uuid| uuid.into_db())
+                    .collect::<Vec<_>>();
+                let new_pool = pool.clone();
+                async move {
+                    let mut query_builder =
+                        add_in_items("delete from meta_data where media_uuid in (", keys_chunk, ");");
+                    query_builder.build().execute(&*new_pool).await
+                }
+            })
+            .collect::<Vec<_>>()
+            .join_await()
+            .await
+    }
 }

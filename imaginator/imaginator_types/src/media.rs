@@ -119,3 +119,9 @@ impl PartialEq for Media {
         self.uuid.eq(&other.uuid)
     }
 }
+
+impl data_communicator::buffered::GetKey<Uuid> for Media {
+    fn key(&self) -> &Uuid {
+        &self.uuid
+    }
+}

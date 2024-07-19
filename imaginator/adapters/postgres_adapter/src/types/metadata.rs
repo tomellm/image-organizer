@@ -2,6 +2,8 @@ use imaginator_types::metadata::MetaData;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+use crate::util::DatabaseUtilities;
+
 use super::{FromDBUuid, IntoDBUuid};
 
 #[derive(Clone, Debug, Deserialize, Serialize, sqlx::FromRow)]
@@ -42,4 +44,20 @@ impl TryFrom<MediaMetaData> for MetaData {
     }
 }
 
-
+impl DatabaseUtilities for MediaMetaData {
+    fn db_table_name() -> &'static str {
+        "meta_data"
+    }
+    fn db_column_names() -> &'static [&'static str] {
+        &["uuid", "media_uuid", "data_key", "data_val"]
+    }
+    fn db_push_touple_fn(
+    ) -> impl FnMut(sqlx::query_builder::Separated<'_, '_, sqlx::MySql, &'static str>, Self) {
+        |mut b, meta| {
+            b.push_bind(meta.uuid);
+            b.push_bind(meta.media_uuid);
+            b.push_bind(meta.data_key);
+            b.push_bind(meta.data_val);
+        }
+    }
+}

@@ -5,14 +5,14 @@ use std::fmt::{Display, Formatter};
 #[allow(dead_code)]
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
+#[derive(Copy, Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub enum MediaType {
     Image(ImageType),
     Video(VideoType),
     Unknown,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
+#[derive(Copy, Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub enum ImageType {
     HEIC = 0,
     PNG = 1,
@@ -20,7 +20,7 @@ pub enum ImageType {
     JPEG = 3,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
+#[derive(Copy, Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub enum VideoType {
     MOV = 0,
     MP4 = 1,
@@ -36,7 +36,31 @@ impl MediaType {
         }
     }
 
-    
+    pub fn is_video(&self) -> bool {
+        match self {
+            Self::Video(_) => true,
+            _ => false
+        }
+    }
+    pub fn video(&self) -> Option<VideoType> {
+        match self {
+            Self::Video(video_type) => Some(*video_type),
+            _ => None
+        }
+    }
+    pub fn is_image(&self) -> bool {
+        match self {
+            Self::Image(_) => true,
+            _ => false
+        }
+    }
+    pub fn image(&self) -> Option<ImageType> {
+        match self {
+            Self::Image(image_type) => Some(*image_type),
+            _ => None 
+        }
+    }
+
 
 }
 
