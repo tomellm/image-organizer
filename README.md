@@ -69,9 +69,4 @@ any additional graph based infromation created by the user
 a [egui](https://github.com/emilk/egui) application that uses both the app and importer
 libraries.
 
-
-
 ![current system design](system.png)
-
-
-
