@@ -1,9 +1,8 @@
-use std::collections::HashMap;
-
-use egui::Widget;
+use egui::{ImageSource, Widget};
 use egui_extras::{Size, StripBuilder};
+use imaginator_app::get_image_path;
 use imaginator_types::media::Media;
-use uuid::Uuid;
+use tracing::info;
 
 pub enum WindowSize {
     Small,
@@ -55,4 +54,11 @@ where
             });
         }
     });
+}
+
+pub fn media_file_link(media: &Media) -> ImageSource {
+    ImageSource::Uri(format!(
+        "file://{}",
+        get_image_path(media)
+    ).into())
 }

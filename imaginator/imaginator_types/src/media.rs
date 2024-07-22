@@ -85,6 +85,13 @@ impl Media {
             .replace(")", "\\)")
     }
 
+    pub fn get_escaped_name(&self) -> String {
+        self.original_name
+            .replace(" ", "\\ ")
+            .replace("(", "\\(")
+            .replace(")", "\\)")
+    }
+
     fn get_most_likely_date(
         meta_data: &Vec<MetaData>,
         xmp_data: &Vec<XmpData>,

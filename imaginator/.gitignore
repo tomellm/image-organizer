@@ -6,3 +6,5 @@
 keys/
 
 infrastructure/mysql
+infrastructure/user_files
+infrastructure/uuids.txt

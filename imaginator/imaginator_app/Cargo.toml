@@ -5,5 +5,16 @@ edition = "2021"
 
 [dependencies]
 sqlx = "0.7.4"
+uuid = { version = "1.8.0", features = ["v4"] }
 imaginator_types = { path = "../imaginator_types" }
+imaginator_importer = { path = "../imaginator_importer" }
 postgres_adapter = { path = "../adapters/postgres_adapter" }
+data_communicator = { path = "../../../data_communicator" }
+image = { version = "0.25.1", features = ["jpeg", "png"] }
+libheif-rs = "1.0.2"
+tracing = "0.1.40"
+futures = "0.3.30"
+tokio = "1.38.1"
+pathdiff = "0.2.1"
+
+

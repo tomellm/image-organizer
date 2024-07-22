@@ -7,10 +7,12 @@ use imaginator::Imaginator;
 mod imaginator;
 mod util;
 mod components;
+mod apps;
 
 #[tokio::main]
 async fn main() {
     tracing_subscriber::fmt::init();
+    dotenv::dotenv();
 
     let options = NativeOptions {
         viewport: ViewportBuilder::default().with_drag_and_drop(true),
