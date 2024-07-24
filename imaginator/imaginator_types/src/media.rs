@@ -7,10 +7,10 @@ use std::{ffi::OsStr, fs::DirEntry};
 
 use uuid::Uuid;
 
+use crate::args::ImageCreateArgs;
 use crate::mediatypes::*;
 use crate::metadata::*;
 use crate::xmpdata::*;
-use crate::args::ImageCreateArgs;
 
 #[derive(Clone, Debug, Serialize, Deserialize, Eq, Hash)]
 pub struct Media {

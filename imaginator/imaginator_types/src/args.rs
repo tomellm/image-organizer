@@ -1,10 +1,9 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetManyPayload {
-    pub uuids: Vec<Uuid>
+    pub uuids: Vec<Uuid>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -20,16 +19,14 @@ impl Pagination {
     }
 }
 
-
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct ImageCreateArgs{
+pub struct ImageCreateArgs {
     pub original_name: String,
     pub current_name: String,
     pub extension: String,
     pub xmp_data: Vec<XmpCreateArgs>,
-    pub meta_data: Vec<MetaCreateArgs>
+    pub meta_data: Vec<MetaCreateArgs>,
 }
-
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct XmpCreateArgs {

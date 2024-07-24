@@ -3,8 +3,7 @@ pub mod query;
 use futures::future::try_join_all;
 use serde::{Deserialize, Serialize};
 use sqlx::{
-    error::Error, query_builder::Separated, Database, Encode, MySql, Pool,
-    QueryBuilder, Type,
+    error::Error, query_builder::Separated, Database, Encode, MySql, Pool, QueryBuilder, Type,
 };
 use std::{pin::Pin, sync::Arc};
 

@@ -42,7 +42,7 @@ impl MediaType {
             0 => Some(Self::Image(ImageType::from_i8(internal_num)?)),
             10 => Some(Self::Video(VideoType::from_i8(internal_num)?)),
             20 => Some(Self::Unknown),
-            _ => None
+            _ => None,
         }
     }
 
@@ -50,7 +50,7 @@ impl MediaType {
         match self {
             Self::Image(image) => 0 + image as i8,
             Self::Video(video) => 10 + video as i8,
-            Self::Unknown => 20
+            Self::Unknown => 20,
         }
     }
 
@@ -59,11 +59,12 @@ impl MediaType {
     }
 
     pub fn get_video_types_u8() -> Vec<i8> {
-        VideoType::get_all().into_iter().map(|t| (t as i8) + 10).collect()
+        VideoType::get_all()
+            .into_iter()
+            .map(|t| (t as i8) + 10)
+            .collect()
     }
-
 }
-
 
 impl ImageType {
     pub fn from_ext(ext: &str) -> Option<Self> {
@@ -72,7 +73,7 @@ impl ImageType {
             "PNG" => Some(Self::PNG),
             "JPG" => Some(Self::JPG),
             "JPEG" => Some(Self::JPEG),
-            _ => None
+            _ => None,
         }
     }
 
@@ -82,15 +83,13 @@ impl ImageType {
             1 => Some(Self::PNG),
             2 => Some(Self::JPG),
             3 => Some(Self::JPEG),
-            _ => None
+            _ => None,
         }
     }
 
     pub fn get_all() -> Vec<Self> {
         vec![Self::HEIC, Self::PNG, Self::JPG, Self::JPEG]
     }
-    
-    
 }
 
 impl Display for ImageType {
@@ -104,7 +103,7 @@ impl VideoType {
         match ext.to_uppercase().as_str() {
             "MOV" => Some(Self::MOV),
             "MP4" => Some(Self::MP4),
-            _ => None
+            _ => None,
         }
     }
 
@@ -112,7 +111,7 @@ impl VideoType {
         match num {
             0 => Some(Self::MOV),
             1 => Some(Self::MP4),
-            _ => None
+            _ => None,
         }
     }
 

@@ -33,31 +33,32 @@ where
     T: Widget + GriddableItem + Clone,
 {
     let items_per_row = T::items_per_row(&window_size(ui));
-    StripBuilder::new(ui).sizes(
-        Size::initial(T::row_height() as f32),
-        (items.len() as f32 / items_per_row as f32).ceil() as usize,
-    ).vertical(|mut strip| {
-        let chunks = items.chunks(items_per_row)
-            .map(|chunk| chunk.to_vec())
-            .collect::<Vec<_>>();
-        for item_chunk in chunks {
-            strip.strip(|builder| {
-                builder.sizes(Size::remainder(), items_per_row)
-                    .horizontal(|mut strip| {
-                        for item in item_chunk {
-                            strip.cell(|ui| {
-                                ui.add(item);
-                            })
-                        }
-                    });
-            });
-        }
-    });
+    StripBuilder::new(ui)
+        .sizes(
+            Size::initial(T::row_height() as f32),
+            (items.len() as f32 / items_per_row as f32).ceil() as usize,
+        )
+        .vertical(|mut strip| {
+            let chunks = items
+                .chunks(items_per_row)
+                .map(|chunk| chunk.to_vec())
+                .collect::<Vec<_>>();
+            for item_chunk in chunks {
+                strip.strip(|builder| {
+                    builder
+                        .sizes(Size::remainder(), items_per_row)
+                        .horizontal(|mut strip| {
+                            for item in item_chunk {
+                                strip.cell(|ui| {
+                                    ui.add(item);
+                                })
+                            }
+                        });
+                });
+            }
+        });
 }
 
 pub fn media_file_link(media: &Media) -> ImageSource {
-    ImageSource::Uri(format!(
-        "file://{}",
-        get_image_path(media)
-    ).into())
+    ImageSource::Uri(format!("file://{}", get_image_path(media)).into())
 }

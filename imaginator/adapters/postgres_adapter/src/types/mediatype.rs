@@ -2,7 +2,6 @@ use std::ops::Deref;
 
 use imaginator_types::mediatypes::{ImageType, MediaType, VideoType};
 
-
 pub struct DBEnum(i8);
 
 impl DBEnum {

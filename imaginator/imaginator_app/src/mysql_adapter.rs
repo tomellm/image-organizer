@@ -62,16 +62,13 @@ impl Storage<Uuid, Media> for MySqlWriter {
         &mut self,
         predicate: Predicate<Media>,
     ) -> impl Future<QueryResponse<Uuid, Media>> {
-        get_all_media(self.pool.clone()).then(|medias_res| {
-            async move {
+        get_all_media(self.pool.clone()).then(|medias_res| async move {
             medias_res
                 .map(|medias| {
-                    let filtered_media =
-                        medias.into_iter().filter(predicate).collect::<Vec<_>>();
+                    let filtered_media = medias.into_iter().filter(predicate).collect::<Vec<_>>();
                     QueryResponse::Ok(filtered_media.into())
                 })
                 .unwrap_or(QueryResponse::Err(QueryError::Default))
-            }
         })
     }
 }
@@ -93,4 +90,3 @@ where
         }
     }
 }
-

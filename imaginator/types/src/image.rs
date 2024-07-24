@@ -7,10 +7,7 @@ use uuid::Uuid;
 use crate::mediatypes::*;
 use crate::metadata::*;
 use crate::xmpdata::*;
-use crate::{
-    args::ImageCreateArgs,
-    database::*,
-};
+use crate::{args::ImageCreateArgs, database::*};
 
 #[derive(Clone, Debug, Serialize, Deserialize, Eq, Hash)]
 pub struct Media {

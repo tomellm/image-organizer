@@ -39,31 +39,28 @@ impl MediaType {
     pub fn is_video(&self) -> bool {
         match self {
             Self::Video(_) => true,
-            _ => false
+            _ => false,
         }
     }
     pub fn video(&self) -> Option<VideoType> {
         match self {
             Self::Video(video_type) => Some(*video_type),
-            _ => None
+            _ => None,
         }
     }
     pub fn is_image(&self) -> bool {
         match self {
             Self::Image(_) => true,
-            _ => false
+            _ => false,
         }
     }
     pub fn image(&self) -> Option<ImageType> {
         match self {
             Self::Image(image_type) => Some(*image_type),
-            _ => None 
+            _ => None,
         }
     }
-
-
 }
-
 
 impl ImageType {
     pub fn from_ext(ext: &str) -> Option<Self> {
@@ -72,15 +69,13 @@ impl ImageType {
             "PNG" => Some(Self::PNG),
             "JPG" => Some(Self::JPG),
             "JPEG" => Some(Self::JPEG),
-            _ => None
+            _ => None,
         }
     }
 
     pub fn get_all() -> Vec<Self> {
         vec![Self::HEIC, Self::PNG, Self::JPG, Self::JPEG]
     }
-    
-    
 }
 
 impl Display for ImageType {
@@ -94,7 +89,7 @@ impl VideoType {
         match ext.to_uppercase().as_str() {
             "MOV" => Some(Self::MOV),
             "MP4" => Some(Self::MP4),
-            _ => None
+            _ => None,
         }
     }
 

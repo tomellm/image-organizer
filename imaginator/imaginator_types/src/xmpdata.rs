@@ -41,6 +41,4 @@ impl XmpData {
                 .collect::<Vec<_>>(),
         }
     }
-
-    
 }

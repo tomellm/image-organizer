@@ -116,7 +116,10 @@ pub async fn delete_all(pool: Arc<Pool<MySql>>) -> Result<(), ()> {
     Ok(())
 }
 
-pub fn delete_many_by_media(pool: Arc<Pool<MySql>>, keys: Vec<Uuid>) -> impl AdapterFuture<Result<(), ()>> {
+pub fn delete_many_by_media(
+    pool: Arc<Pool<MySql>>,
+    keys: Vec<Uuid>,
+) -> impl AdapterFuture<Result<(), ()>> {
     async move {
         if keys.len() == 0 {
             return Ok(());
@@ -129,8 +132,11 @@ pub fn delete_many_by_media(pool: Arc<Pool<MySql>>, keys: Vec<Uuid>) -> impl Ada
                     .collect::<Vec<_>>();
                 let new_pool = pool.clone();
                 async move {
-                    let mut query_builder =
-                        add_in_items("delete from xmp_data where media_uuid in (", keys_chunk, ");");
+                    let mut query_builder = add_in_items(
+                        "delete from xmp_data where media_uuid in (",
+                        keys_chunk,
+                        ");",
+                    );
                     query_builder.build().execute(&*new_pool).await
                 }
             })

@@ -35,12 +35,10 @@ pub fn scale_down_to_max(width: u32, height: u32) -> (u32, u32) {
     let height_f32 = height as f32;
     match width.cmp(&height) {
         Ordering::Greater => {
-            let short_side = (MAX_F32 * (height_f32 / width_f32 )).round() as u32;
+            let short_side = (MAX_F32 * (height_f32 / width_f32)).round() as u32;
             (MAX, short_side)
-        },
-        Ordering::Equal => {
-            (MAX, MAX)
-        },
+        }
+        Ordering::Equal => (MAX, MAX),
         Ordering::Less => {
             let short_side = (MAX_F32 * (width_f32 / height_f32)).round() as u32;
             (short_side, MAX)

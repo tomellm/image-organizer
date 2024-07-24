@@ -4,10 +4,10 @@ use eframe::NativeOptions;
 use egui::ViewportBuilder;
 use imaginator::Imaginator;
 
+mod apps;
+mod components;
 mod imaginator;
 mod util;
-mod components;
-mod apps;
 
 #[tokio::main]
 async fn main() {
@@ -28,4 +28,3 @@ async fn main() {
         }),
     );
 }
-

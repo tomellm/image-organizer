@@ -6,16 +6,18 @@ mod types;
 mod util;
 mod xmp_data;
 use futures::try_join;
+use std::sync::Arc;
 use util::AdapterFuture;
 use uuid::Uuid;
-use std::sync::Arc;
 
 use imaginator_types::media::Media;
 use sqlx::{MySql, Pool};
 use types::{FromDBUuid, MediaData, MediaUnwrapped};
 
-
-pub fn save_new_media(pool: Arc<Pool<MySql>>, media: Vec<Media>) -> impl AdapterFuture<Result<(), ()>> {
+pub fn save_new_media(
+    pool: Arc<Pool<MySql>>,
+    media: Vec<Media>,
+) -> impl AdapterFuture<Result<(), ()>> {
     let db_media = media
         .into_iter()
         .map(MediaUnwrapped::from)
@@ -29,7 +31,7 @@ pub fn save_new_media(pool: Arc<Pool<MySql>>, media: Vec<Media>) -> impl Adapter
             xmp.extend(new_xmp);
             (med, meta, xmp)
         },
-        );
+    );
 
     let media_fut = media_data::save_many(pool.clone(), media_data);
     let meta_fut = meta_data::save_many(pool.clone(), meta_data);
@@ -52,9 +54,7 @@ pub fn delete_media(pool: Arc<Pool<MySql>>, keys: Vec<Uuid>) -> impl AdapterFutu
 }
 
 pub fn get_all_media(pool: Arc<Pool<MySql>>) -> impl AdapterFuture<Result<Vec<Media>, ()>> {
-    async move {
-        build_medias(pool.clone(), media_data::get_all(pool).await?).await
-    }
+    async move { build_medias(pool.clone(), media_data::get_all(pool).await?).await }
 }
 
 pub async fn delete_all(pool: Arc<Pool<MySql>>) -> Result<(), ()> {

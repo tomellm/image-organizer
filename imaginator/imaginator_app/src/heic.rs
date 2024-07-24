@@ -6,7 +6,10 @@ use imaginator_types::{
 use libheif_rs::{ColorSpace, HeifContext, LibHeif, Planes, RgbChroma};
 use tracing::error;
 
-use crate::{thumbnail_filename, utils::{images_dir_with_file, scale_down_to_max, user_files_with_file}};
+use crate::{
+    thumbnail_filename,
+    utils::{images_dir_with_file, scale_down_to_max, user_files_with_file},
+};
 
 pub fn heic_thumbnail(heic_media: &Media) {
     let Media {
@@ -61,12 +64,13 @@ pub fn heic_thumbnail(heic_media: &Media) {
         return;
     }
 
-
     /*for (x, y, pixel) in image_buff.enumerate_pixels_mut() {
         let pos = (image.width() * y + x) as usize;
         *pixel = image::Rgb([r.data[pos], g.data[pos], b.data[pos]]);
     }*/
-    let buffer = ImageBuffer::<Rgb<u8>, &[u8]>::from_raw(handle.width(), handle.height(), inter.data).unwrap();
+    let buffer =
+        ImageBuffer::<Rgb<u8>, &[u8]>::from_raw(handle.width(), handle.height(), inter.data)
+            .unwrap();
     let (new_width, new_height) = scale_down_to_max(handle.width(), handle.height());
     let buffer = image::imageops::resize(&buffer, new_width, new_height, FilterType::Gaussian);
     image::save_buffer_with_format(

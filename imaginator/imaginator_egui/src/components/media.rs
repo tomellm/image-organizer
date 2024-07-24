@@ -1,7 +1,6 @@
 use egui::{Direction, Image, Layout, Widget};
 use imaginator_types::media::Media;
 
-
 use crate::util::{media_file_link, GriddableItem};
 
 #[derive(Clone)]
@@ -18,12 +17,16 @@ impl<'a> From<&'a Media> for MediaCard<'a> {
 impl<'a> Widget for MediaCard<'a> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         ui.vertical(|ui| {
-            ui.with_layout(Layout::centered_and_justified(Direction::LeftToRight), |ui| {
-                ui.add(Image::new(media_file_link(self.media)));
-            });
+            ui.with_layout(
+                Layout::centered_and_justified(Direction::LeftToRight),
+                |ui| {
+                    ui.add(Image::new(media_file_link(self.media)));
+                },
+            );
             ui.label(self.media.original_name.clone());
             ui.label(format!("{}", self.media.uuid));
-        }).response
+        })
+        .response
     }
 }
 

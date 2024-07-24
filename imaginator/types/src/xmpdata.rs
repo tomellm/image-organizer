@@ -1,10 +1,7 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::{
-    args::XmpCreateArgs,
-    database::*,
-};
+use crate::{args::XmpCreateArgs, database::*};
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct XmpData {

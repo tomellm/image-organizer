@@ -5,7 +5,10 @@ use std::{
     str::FromStr,
 };
 
-use crate::{errors::{ImportErr, MediaReadErr}, ReadMediaDirectory};
+use crate::{
+    errors::{ImportErr, MediaReadErr},
+    ReadMediaDirectory,
+};
 use imaginator_types::media::Media;
 
 pub fn get_media_with_xmp(dir_path: &str) -> Result<ReadMediaDirectory, ImportErr> {
@@ -81,6 +84,7 @@ pub fn get_media_with_xmp(dir_path: &str) -> Result<ReadMediaDirectory, ImportEr
         .collect::<Vec<_>>();
 
     Ok(ReadMediaDirectory {
-        media, errors: all_media_errors
+        media,
+        errors: all_media_errors,
     })
 }

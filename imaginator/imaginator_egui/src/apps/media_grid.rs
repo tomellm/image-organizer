@@ -11,7 +11,9 @@ pub struct MediaGrid {
 }
 impl MediaGrid {
     pub fn new(mut media_comm: Communicator<Uuid, Media>) -> Self {
-        media_comm.query(QueryType::predicate(|media: &Media| media.media_type.is_image()));
+        media_comm.query(QueryType::predicate(|media: &Media| {
+            media.media_type.is_image()
+        }));
         media_comm.sort(|a, b| a.datetime_created.cmp(&b.datetime_created));
         Self {
             media_comm,
@@ -29,8 +31,8 @@ impl eframe::App for MediaGrid {
                 if !self.media_comm.is_empty() {
                     create_grid(
                         ui,
-                        self.pagination.paginate(self.media_comm
-                            .data_sorted())
+                        self.pagination
+                            .paginate(self.media_comm.data_sorted())
                             .into_iter()
                             .map(MediaCard::from)
                             .collect::<Vec<_>>(),
@@ -47,7 +49,7 @@ struct PaginationControls {
 }
 
 impl PaginationControls {
-    pub fn controls(&mut self, ui: &mut Ui, num_elements: usize)  {
+    pub fn controls(&mut self, ui: &mut Ui, num_elements: usize) {
         ui.horizontal(|ui| {
             if ui.button("<").clicked() && self.page > 0 {
                 self.page -= 1;
@@ -55,10 +57,10 @@ impl PaginationControls {
             if ui.button("-10").clicked() && self.per_page > 10 {
                 self.per_page -= 10;
             }
-            if ui.button("-").clicked() && self.per_page > 1{
+            if ui.button("-").clicked() && self.per_page > 1 {
                 self.per_page -= 1;
             }
-            if ui.button("+").clicked(){
+            if ui.button("+").clicked() {
                 self.per_page += 1;
             }
             if ui.button("+10").clicked() {
@@ -83,7 +85,9 @@ impl PaginationControls {
 
 impl Default for PaginationControls {
     fn default() -> Self {
-        Self { page: 0, per_page: 30 }
+        Self {
+            page: 0,
+            per_page: 30,
+        }
     }
 }
-
