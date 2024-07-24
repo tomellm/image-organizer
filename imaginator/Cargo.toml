@@ -1,6 +1,7 @@
 [workspace]
 
 members = [
+    "types",
     "imaginator_importer",
     "imaginator_app",
     "imaginator_egui",
@@ -10,4 +11,5 @@ members = [
 ]
 
 resolver="2"
+
 

@@ -11,9 +11,7 @@ pub struct MediaGrid {
 }
 impl MediaGrid {
     pub fn new(mut media_comm: Communicator<Uuid, Media>) -> Self {
-        media_comm.query(QueryType::predicate(|media: &Media| {
-            media.media_type.is_image()
-        }));
+        media_comm.query(QueryType::predicate(|media: &Media| media.media_type.is_image()));
         media_comm.sort(|a, b| a.datetime_created.cmp(&b.datetime_created));
         Self {
             media_comm,
@@ -66,7 +64,7 @@ impl PaginationControls {
             if ui.button("+10").clicked() {
                 self.per_page += 10;
             }
-            if ui.button(">").clicked() && self.page <= num_elements / self.per_page {
+            if ui.button(">").clicked() && self.page < num_elements / self.per_page {
                 self.page += 1;
             }
         });

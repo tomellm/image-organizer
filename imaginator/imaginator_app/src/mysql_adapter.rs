@@ -13,6 +13,7 @@ use sqlx::{MySql, Pool};
 use uuid::Uuid;
 
 pub struct DB {
+    #[allow(dead_code)]
     pool: Arc<Pool<MySql>>,
     pub media: DataContainer<Uuid, Media, MySqlWriter>,
 }

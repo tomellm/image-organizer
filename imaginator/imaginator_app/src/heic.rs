@@ -1,4 +1,4 @@
-use image::{imageops::FilterType, ImageBuffer, Rgb, RgbImage};
+use image::{imageops::FilterType, ImageBuffer, Rgb};
 use imaginator_types::{
     media::Media,
     mediatypes::{ImageType, MediaType},
@@ -6,9 +6,9 @@ use imaginator_types::{
 use libheif_rs::{ColorSpace, HeifContext, LibHeif, Planes, RgbChroma};
 use tracing::error;
 
-use crate::utils::{images_dir_with_file, scale_down_to_max, user_files_with_file};
+use crate::{thumbnail_filename, utils::{images_dir_with_file, scale_down_to_max, user_files_with_file}};
 
-pub fn parse_heic(heic_media: &Media) {
+pub fn heic_thumbnail(heic_media: &Media) {
     let Media {
         uuid,
         current_name,
@@ -68,9 +68,9 @@ pub fn parse_heic(heic_media: &Media) {
     }*/
     let buffer = ImageBuffer::<Rgb<u8>, &[u8]>::from_raw(handle.width(), handle.height(), inter.data).unwrap();
     let (new_width, new_height) = scale_down_to_max(handle.width(), handle.height());
-    let buffer = image::imageops::resize(&buffer, new_width, new_height, FilterType::Nearest);
+    let buffer = image::imageops::resize(&buffer, new_width, new_height, FilterType::Gaussian);
     image::save_buffer_with_format(
-        user_files_with_file(format!("{uuid}.jpeg").as_str()),
+        user_files_with_file(&thumbnail_filename(heic_media)),
         &buffer,
         new_width,
         new_height,

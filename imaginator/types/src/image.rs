@@ -1,9 +1,6 @@
 use chrono::DateTime;
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
-#[allow(dead_code)]
-use std::fs;
-use std::{ffi::OsStr, fs::DirEntry};
 
 use uuid::Uuid;
 
@@ -11,7 +8,7 @@ use crate::mediatypes::*;
 use crate::metadata::*;
 use crate::xmpdata::*;
 use crate::{
-    args::{ImageCreateArgs, MetaCreateArgs, XmpCreateArgs},
+    args::ImageCreateArgs,
     database::*,
 };
 

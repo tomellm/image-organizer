@@ -1,7 +1,4 @@
 use serde::{Deserialize, Serialize};
-#[allow(dead_code)]
-use std::str::FromStr;
-
 use uuid::Uuid;
 
 use crate::{

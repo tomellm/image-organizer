@@ -11,7 +11,7 @@ pub struct Controls {
 
 impl Controls {
     pub fn new(media_comm: Communicator<Uuid, Media>) -> Self {
-        media_comm.query(QueryType::predicate(|_| true));
+        media_comm.query(QueryType::predicate(|_media: &Media| true));
         Self {
             selected_dir: String::new(),
             media_comm,
@@ -50,15 +50,22 @@ impl eframe::App for Controls {
                 if ui.button("load stuff").clicked() {
                     self.parse_dir();
                 }
-                if ui.button("create thumbnails").clicked() {
-                    let media = self.media_comm.data_cloned();
-                    self.creating_thumbnails = Some(ImmediateValuePromise::new(async move {
-                        Ok(imaginator_app::create_thumbnails(media).await)
-                    }));
+                if let None = self.creating_thumbnails {
+                    if ui.button("create thumbnails").clicked() {
+                        let media = self.media_comm.data_cloned();
+                        self.creating_thumbnails = Some(ImmediateValuePromise::new(async move {
+                            Ok(imaginator_app::create_thumbnails(media).await)
+                        }));
+                    }
+                    if ui.button("create missing thumbnails").clicked() {
+                        let media = self.media_comm.data_cloned();
+                        self.creating_thumbnails = Some(ImmediateValuePromise::new(async move {
+                            Ok(imaginator_app::create_missing_thumbnails(media).await)
+                        }));
+                    }
                 }
                 ui.label(format!("len {}", self.media_comm.data().len()));
             });
         });
-        
     }
 }

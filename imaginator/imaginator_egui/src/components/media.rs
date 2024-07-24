@@ -1,4 +1,4 @@
-use egui::{Align, Direction, Image, Layout, Widget};
+use egui::{Direction, Image, Layout, Widget};
 use imaginator_types::media::Media;
 
 

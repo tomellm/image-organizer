@@ -21,7 +21,7 @@ pub struct Apps {
 impl Apps {
     pub fn new(media_cont: &mut DataContainer<Uuid, Media, MySqlWriter>) -> Self {
         Self {
-            anchor: Anchor::Controls,
+            anchor: Anchor::MediaGrid,
             controls: Controls::new(media_cont.communicator()),
             media_grid: MediaGrid::new(media_cont.communicator()),
         }

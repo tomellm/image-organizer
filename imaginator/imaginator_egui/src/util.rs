@@ -2,7 +2,6 @@ use egui::{ImageSource, Widget};
 use egui_extras::{Size, StripBuilder};
 use imaginator_app::get_image_path;
 use imaginator_types::media::Media;
-use tracing::info;
 
 pub enum WindowSize {
     Small,
