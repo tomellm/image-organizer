@@ -28,3 +28,5 @@ image = { version = "0.25.1", features = ["jpeg", "png"] }
 dotenv = "0.15.0"
 magick_rust = "1.0.0"
 sysinfo = "0.30.13"
+rfd = { version = "0.14.1", features = ["tokio"] }
+ubyte = "0.10.4"
