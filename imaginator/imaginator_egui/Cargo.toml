@@ -20,9 +20,11 @@ lazy_async_promise = "0.5.0"
 sqlx = { version = "0.7.4", features = ["mysql", "runtime-tokio"] }
 tokio = "1.38.0"
 tracing = "0.1.40"
-tracing-subscriber = "0.3.18"
+tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 uuid = { version = "1.10.0", features = ["v4"] }
 futures = "0.3.30"
 egui_extras = { version = "0.28.1", features = ["all_loaders"] }
 image = { version = "0.25.1", features = ["jpeg", "png"] }
 dotenv = "0.15.0"
+magick_rust = "1.0.0"
+sysinfo = "0.30.13"

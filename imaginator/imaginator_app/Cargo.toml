@@ -16,5 +16,6 @@ tracing = "0.1.40"
 futures = "0.3.30"
 tokio = "1.38.1"
 pathdiff = "0.2.1"
+magick_rust = "1.0.0"
 
 

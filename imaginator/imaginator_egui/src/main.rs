@@ -11,8 +11,11 @@ mod util;
 
 #[tokio::main]
 async fn main() {
-    tracing_subscriber::fmt::init();
+    tracing_subscriber::fmt()
+        .with_env_filter("info,imaginator_app=trace")
+        .init();
     dotenv::dotenv().expect("dotenv could not load the envirnoment variables.");
+    magick_rust::magick_wand_genesis();
 
     let options = NativeOptions {
         viewport: ViewportBuilder::default().with_drag_and_drop(true),

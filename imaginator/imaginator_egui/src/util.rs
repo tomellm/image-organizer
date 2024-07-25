@@ -1,6 +1,6 @@
 use egui::{ImageSource, Widget};
 use egui_extras::{Size, StripBuilder};
-use imaginator_app::get_image_path;
+use imaginator_app::{get_image_path, thumbnail_path};
 use imaginator_types::media::Media;
 
 pub enum WindowSize {
@@ -59,6 +59,8 @@ where
         });
 }
 
-pub fn media_file_link(media: &Media) -> ImageSource {
-    ImageSource::Uri(format!("file://{}", get_image_path(media)).into())
+pub fn thumbnail_file_link(media: &Media) -> Option<ImageSource> {
+    thumbnail_path(media).map(|path| {
+        ImageSource::Uri(format!("file://{path}").into())
+    })
 }
