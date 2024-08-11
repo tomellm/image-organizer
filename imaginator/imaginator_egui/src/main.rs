@@ -12,7 +12,7 @@ mod util;
 #[tokio::main]
 async fn main() {
     tracing_subscriber::fmt()
-        .with_env_filter("info,imaginator_app=trace")
+        .with_env_filter("info,imaginator_app=trace,data_communicator=debug")
         .init();
     dotenv::dotenv().expect("dotenv could not load the envirnoment variables.");
     magick_rust::magick_wand_genesis();

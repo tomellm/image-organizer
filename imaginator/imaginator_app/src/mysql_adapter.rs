@@ -52,6 +52,13 @@ impl Storage<Uuid, Media> for MySqlWriter {
     fn delete_many(&mut self, keys: &[Uuid]) -> impl Future<ChangeResult> {
         delete_media(self.pool.clone(), keys.to_vec()).into_change_result()
     }
+    fn get_all(&mut self) -> impl Future<QueryResponse<Uuid, Media>> {
+        get_all_media(self.pool.clone()).then(|medias_res| async move {
+            medias_res
+                .map(|medias| QueryResponse::Ok(medias.into()))
+                .unwrap_or(QueryResponse::Err(QueryError::Default))
+        })
+    }
     fn get_by_id(&mut self, key: Uuid) -> impl Future<QueryResponse<Uuid, Media>> {
         self.get_by_predicate(Box::new(move |media: &Media| key.eq(&media.uuid)))
     }

@@ -10,6 +10,7 @@ use crate::{
     ReadMediaDirectory,
 };
 use imaginator_types::media::Media;
+use tracing::{info, warn};
 
 pub fn get_media_with_xmp(dir_path: &str) -> Result<ReadMediaDirectory, ImportErr> {
     let path_buf = PathBuf::from_str(dir_path).unwrap();
@@ -19,13 +20,24 @@ pub fn get_media_with_xmp(dir_path: &str) -> Result<ReadMediaDirectory, ImportEr
 
     let read_dir = fs::read_dir(path_buf).map_err(|err| ImportErr::ReadDirErr(err))?;
 
-    let (read_dirs, err_read_dirs): (Vec<_>, Vec<_>) =
+    let (ok_read_dirs, err_read_dirs): (Vec<_>, Vec<_>) =
         read_dir.into_iter().partition(Result::is_ok);
 
-    let read_dirs = read_dirs
+    let len_ok_read_dirs = ok_read_dirs.len();
+
+    let read_dirs = ok_read_dirs
         .into_iter()
         .map(Result::unwrap)
+        .filter(|read_dir| !read_dir.file_name().to_str().unwrap().starts_with("."))
         .collect::<Vec<_>>();
+
+    if read_dirs.len() != len_ok_read_dirs {
+        warn!(
+        "The lenghts of the ok read dirs and the final read dirs are not the same, namely {} and {}",
+        len_ok_read_dirs,
+        read_dirs.len()
+        );
+    }
     let mut all_media_errors = err_read_dirs
         .into_iter()
         .map(|err| MediaReadErr::read_dir(err.unwrap_err()))

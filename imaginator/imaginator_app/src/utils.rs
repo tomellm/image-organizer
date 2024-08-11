@@ -1,3 +1,5 @@
+pub mod lazy_async_promise;
+
 use std::cmp::Ordering;
 
 pub fn dir() -> String {

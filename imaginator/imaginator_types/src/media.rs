@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 #[allow(dead_code)]
 use std::fs;
 use std::{ffi::OsStr, fs::DirEntry};
+use tracing::error;
 
 use uuid::Uuid;
 
@@ -58,7 +59,11 @@ impl Media {
         let meta_data = MetaData::from_dir_entry(entry);
         let xmp_data = match xmp_file {
             Some(xmp) => {
-                let contents = fs::read_to_string(xmp.path()).unwrap();
+                let contents = fs::read_to_string(xmp.path())
+                    .map_err(|_| {
+                        error!("The contents of the xmp file [{:?}] could not be read to string", xmp.path());
+                    })
+                    .unwrap();
                 XmpData::from_dir_entry(contents)
             }
             None => vec![],

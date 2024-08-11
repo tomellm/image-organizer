@@ -12,11 +12,11 @@ postgres_adapter = { path = "../adapters/postgres_adapter" }
 
 # data_communicator = { git = "https://github.com/tomellm/data_communicator.git", branch = "tom/buffered-init" }
 data_communicator = { path = "../../../data_communicator" }
-
+egui_light_states = { path = "../../../egui_light_states" }
 
 eframe = "0.28.1"
 egui = "0.28.1"
-lazy_async_promise = "0.5.0"
+lazy_async_promise = { path = "../../../lazy_async_promise" } #"0.5.0"
 sqlx = { version = "0.7.4", features = ["mysql", "runtime-tokio"] }
 tokio = "1.38.0"
 tracing = "0.1.40"
@@ -30,3 +30,4 @@ magick_rust = "1.0.0"
 sysinfo = "0.30.13"
 rfd = { version = "0.14.1", features = ["tokio"] }
 ubyte = "0.10.4"
+

@@ -2,17 +2,18 @@ mod heic;
 mod jpg;
 pub mod mysql_adapter;
 mod png;
-mod utils;
+pub mod utils;
 
 use std::{fs, path::Path};
 
-use data_communicator::buffered::communicator::Communicator;
+use data_communicator::buffered::{change::ChangeResult, communicator::Communicator};
 use futures::future::join_all;
 use imaginator_importer::{errors::MediaReadErr, scan_path, ReadMediaDirectory};
 use imaginator_types::{
     media::Media,
     mediatypes::{ImageType, MediaType},
 };
+use lazy_async_promise::ImmediateValuePromise;
 use magick_rust::MagickWand;
 use tracing::{debug, info, trace};
 use utils::{images_dir_with_file, user_files_with_file};
@@ -21,10 +22,9 @@ use uuid::Uuid;
 pub fn scan_path_and_save(
     path: String,
     communicator: &mut Communicator<Uuid, Media>,
-) -> Vec<MediaReadErr> {
+) -> (ImmediateValuePromise<ChangeResult>, Vec<MediaReadErr>) {
     let ReadMediaDirectory { media, errors } = scan_path(path);
-    communicator.update_many(media);
-    errors
+    (communicator.update_many(media), errors)
 }
 
 pub fn has_thumbnail(media: &Media) -> bool {
@@ -38,9 +38,8 @@ pub async fn create_missing_thumbnails(medias: Vec<Media>) {
         .filter(|m| !has_thumbnail(m) && m.media_type.is_image())
         .collect::<Vec<_>>();
     info!(
-        "Creating thumbnails for {} medias which are missing one of a totoal of {} medias",
-        medias.len(),
-        original_len
+        "Creating thumbnails for {} medias which are missing one of a totoal of {original_len} medias",
+        medias.len()
     );
     create_thumbnails(medias).await
 }

@@ -17,3 +17,4 @@ uuid = { version = "1.8.0", features = ["serde", "v4"] }
 xmp_toolkit = "1.7.3"
 # data_communicator = { git = "https://github.com/tomellm/data_communicator.git", branch = "tom/buffered-init" }
 data_communicator = { path = "../../../data_communicator" }
+tracing = "0.1.40"
